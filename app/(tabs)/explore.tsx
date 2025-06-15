@@ -1,110 +1,134 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Button, StyleSheet, TextProps } from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { MotiView } from 'moti';
+import { useState } from 'react';
+
+type TickerListProps = {
+  number: number;
+  fontSize: number;
+  index: number;
+};
+
+const numbersToNice = [...Array(10).keys()]
+
+function Tick({ children, fontSize, style, ...rest }: TextProps & {
+  fontSize: number,
+}) {
+  return (
+    <ThemedText {...rest} style={[style, {
+      fontSize,
+      lineHeight: fontSize * 1.1,
+      fontVariant: ['tabular-nums'],
+      fontWeight: '900',
+    }]}>
+      {children}
+    </ThemedText>
+  )
+}
+
+function TickerList({ number, fontSize, index }: TickerListProps) {
+  const _stagger = 50;
+  return (
+    <ThemedView style={[styles.tickerListContainer, { height: fontSize }]}>
+      <MotiView
+        animate={{
+          translateY: -fontSize * 1.1 * number
+        }}
+        transition={{
+          delay: index * _stagger,
+          damping: 80,
+          stiffness: 200,
+        }}
+      >
+        {numbersToNice.map((num, index) => {
+          return (
+            <Tick key={`number-${num}-index-${index}`}
+              fontSize={fontSize}
+            >
+              {num}
+            </Tick>
+          )
+        })}
+      </MotiView>
+    </ThemedView >
+  )
+}
+
+function Ticker({ value, fontSize }: { value: number, fontSize: number }) {
+  const intNumber = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(value);
+  const splitValue = intNumber.toString().split('');
+  const [newFontSize, setNewFontSize] = useState(fontSize);
+  return (
+    <ThemedView>
+      <Tick
+        fontSize={fontSize}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        onTextLayout={(e) => {
+          setNewFontSize(e.nativeEvent.lines[0].ascender)
+        }}
+        style={{
+          position: 'absolute',
+          left: 1000000,
+          top: 1000000,
+        }}
+      >
+        {intNumber}
+      </Tick>
+      <ThemedView style={styles.ticker}>
+        {splitValue.map((number, index) => {
+          if (!isNaN(parseInt(number))) {
+            return (
+              <TickerList
+                number={parseInt(number)}
+                fontSize={newFontSize}
+                index={index}
+                key={index}
+              />
+            )
+          }
+          return (
+            <Tick
+              key={index}
+              fontSize={newFontSize}
+              style={{ opacity: 0.2 }}
+            >
+              {number}
+            </Tick>
+          )
+        })}
+      </ThemedView>
+    </ThemedView>
+  )
+}
 
 export default function TabTwoScreen() {
+  const fontSize = 100;
+  const [value, setValue] = useState(100);
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ThemedView style={styles.container}>
+      <Ticker value={value} fontSize={fontSize} />
+      <Button title='random value' onPress={() => setValue(Math.floor(Math.random() * 1000))} />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  titleContainer: {
+  ticker: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
   },
+  tickerListContainer: {
+    overflow: 'hidden',
+  }
 });
