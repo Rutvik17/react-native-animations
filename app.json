@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "dynamic-slider",
-    "slug": "dynamic-slider",
+    "name": "react-native-animations",
+    "slug": "react-native-animations",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
