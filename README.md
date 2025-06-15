@@ -19,4 +19,5 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 ## Animations
 
 1. Dynamic Slider & Animated Counter
+
    ![Demo Gif](https://github.com/user-attachments/assets/9809589a-8c55-4ba2-b23e-938e87271e1b)
